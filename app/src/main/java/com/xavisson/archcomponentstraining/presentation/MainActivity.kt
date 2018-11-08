@@ -1,7 +1,8 @@
-package com.xavisson.archcomponentstraining
+package com.xavisson.archcomponentstraining.presentation
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import com.xavisson.archcomponentstraining.R
 
 class MainActivity : AppCompatActivity() {
 
