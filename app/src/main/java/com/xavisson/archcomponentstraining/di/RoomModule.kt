@@ -7,7 +7,7 @@ import dagger.Provides
 import javax.inject.Singleton
 
 @Module
-class DataModule {
+class RoomModule {
 	@Provides
 	@Singleton
 	fun provideRoomCurrencyDataSource(context: Context) =
