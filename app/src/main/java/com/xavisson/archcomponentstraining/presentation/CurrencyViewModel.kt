@@ -10,20 +10,26 @@ import javax.inject.Inject
 
 class CurrencyViewModel : ViewModel() {
 
-	@Inject
-	lateinit var currencyRepository: CurrencyRepository
+    @Inject
+    lateinit var currencyRepository: CurrencyRepository
 
-	private var liveCurrencyData: LiveData<List<Currency>>? = null
+    private var liveCurrencyData: LiveData<List<Currency>>? = null
 
-	init {
-		MyApplication.appComponent.inject(this)
-		if (liveCurrencyData == null) {
-			liveCurrencyData = MutableLiveData<List<Currency>>()
-			liveCurrencyData = currencyRepository.getCurrencyList()
-		}
-	}
+    init {
+        initializeDagger()
+        loadCurrencyList()
+    }
 
-	fun getCurrencyList(): LiveData<List<Currency>>? {
-		return liveCurrencyData
-	}
+    private fun initializeDagger() = MyApplication.appComponent.inject(this)
+
+    private fun loadCurrencyList() {
+        if (liveCurrencyData == null) {
+            liveCurrencyData = MutableLiveData<List<Currency>>()
+            liveCurrencyData = currencyRepository.getCurrencyList()
+        }
+    }
+
+    fun getCurrencyList(): LiveData<List<Currency>>? {
+        return liveCurrencyData
+    }
 }

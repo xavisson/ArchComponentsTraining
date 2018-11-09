@@ -16,7 +16,8 @@ class MyApplication : Application() {
 	private fun initializeDagger() {
 		appComponent = DaggerAppComponent.builder()
 				.appModule(AppModule(this))
-				.dataModule(RoomModule()).build()
+				.roomModule(RoomModule())
+				.remoteModule(RemoteModule()).build()
 	}
 }
 
