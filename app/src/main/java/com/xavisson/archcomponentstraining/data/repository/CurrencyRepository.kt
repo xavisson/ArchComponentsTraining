@@ -3,7 +3,7 @@ package com.xavisson.archcomponentstraining.data.repository
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
-import com.xavisson.archcomponentstraining.data.remote.CurrencyResponse
+import com.xavisson.archcomponentstraining.data.remote.ExchangesResponse
 import com.xavisson.archcomponentstraining.data.remote.RemoteCurrencyDataSource
 import com.xavisson.archcomponentstraining.data.room.CurrencyEntity
 import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDataSource
@@ -25,26 +25,37 @@ class CurrencyRepository @Inject constructor(
 
     override fun getCurrencyList(): LiveData<List<Currency>> {
         val roomCurrencyDao = roomCurrencyDataSource.currencyDao()
-        return transform(roomCurrencyDao.getAllCurrencies())
+        val mutableLiveData = MutableLiveData<List<Currency>>()
+        roomCurrencyDao.getAllCurrencies()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .map { currencyList ->
+                    mutableLiveData.value = transform(currencyList)
+                }
+
+        return mutableLiveData
+    }
+
+    private fun transform(currencies: List<CurrencyEntity>): List<Currency> {
+        val currencyList = ArrayList<Currency>()
+        currencies.forEach {
+            currencyList.add(Currency(it.countryCode, it.countryName))
+        }
+        return currencyList
     }
 
     override fun getAvailableExchange(currencies: String): LiveData<AvailableExchange> {
-        var mutableAvailableExchange = MutableLiveData<AvailableExchange>()
+        val mutableLiveData = MutableLiveData<AvailableExchange>()
         remoteCurrencyDataSource.requestAvailableExchange(currencies)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { currency ->
-                    if (currency.isSuccess) {
-                        print(" Is Success: " + currency.isSuccess + "\n")
-                        for(entry in currency.currencyQuotes){
-                            println(entry.key + " : "+ entry.value + "\n")
-                        }
-                        mutableAvailableExchange = transform(currency)
-                    } else {
-                        print("onError")
+                .map { currencyResponse ->
+                    if (currencyResponse.success) {
+                        mutableLiveData.value = transform(currencyResponse)
                     }
                 }
-        return mutableAvailableExchange
+
+        return mutableLiveData
     }
 
     private fun populateRoomDataSource(roomCurrencyDataSource: RoomCurrencyDataSource) {
@@ -66,12 +77,7 @@ class CurrencyRepository @Inject constructor(
         }
     }
 
-    private fun transform(currencyResponse: CurrencyResponse): MutableLiveData<AvailableExchange> {
-        val mutableAvailableExchange = MutableLiveData<AvailableExchange>()
-        mutableAvailableExchange.value = AvailableExchange(
-                0,
-                0
-        )
-        return mutableAvailableExchange
+    private fun transform(exchangeMap: ExchangesResponse): AvailableExchange {
+        return AvailableExchange(exchangeMap.quotes)
     }
 }

@@ -11,5 +11,5 @@ interface RemoteCurrencyService {
 			@Query(RemoteContract.ACCESS_KEY) accessKey: String,
 			@Query(RemoteContract.CURRENCIES) currencies: String,
 			@Query(RemoteContract.FORMAT) format: String
-	): Observable<CurrencyResponse>
+	): Observable<ExchangesResponse>
 }

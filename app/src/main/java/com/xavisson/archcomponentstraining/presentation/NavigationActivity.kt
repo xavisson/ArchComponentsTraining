@@ -8,6 +8,7 @@ import android.arch.lifecycle.Observer
 import android.support.design.widget.BottomNavigationView
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
+import android.widget.Toast
 
 class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -27,14 +28,16 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
         val currencyViewModel = ViewModelProviders.of(this).get(CurrencyViewModel::class.java)
         currencyViewModel.getCurrencyList()?.observe(this, Observer { currencyList ->
             currencyList!!.forEach {
-                //println(" Code " + it.code + " Country " + it.country)
+                println(" Code " + it.code + " Country " + it.country)
             }
         })
 
         val exchangeViewModel = ViewModelProviders.of(this).get(ExchangeViewModel::class.java)
-        exchangeViewModel.getAvailableExchange("AUD,EUR").observe(this, Observer { availableExchange ->
-            print(availableExchange?.currencyFrom)
-            print(availableExchange?.currencyTo)
+        exchangeViewModel.getAvailableExchange("AUD,EUR")?.observe(this, Observer { availableExchange ->
+            availableExchange?.availableExchangesMap?.forEach { key, value ->
+                print("OHTE: $key $value")
+                Toast.makeText(this, key, Toast.LENGTH_SHORT).show()
+            }
         })
     }
 
