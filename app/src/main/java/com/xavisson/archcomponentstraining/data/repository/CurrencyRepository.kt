@@ -35,7 +35,10 @@ class CurrencyRepository @Inject constructor(
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { currency ->
                     if (currency.isSuccess) {
-                        print("Is Success" + currency.isSuccess)
+                        print(" Is Success: " + currency.isSuccess + "\n")
+                        for(entry in currency.currencyQuotes){
+                            println(entry.key + " : "+ entry.value + "\n")
+                        }
                         mutableAvailableExchange = transform(currency)
                     } else {
                         print("onError")
@@ -66,8 +69,8 @@ class CurrencyRepository @Inject constructor(
     private fun transform(currencyResponse: CurrencyResponse): MutableLiveData<AvailableExchange> {
         val mutableAvailableExchange = MutableLiveData<AvailableExchange>()
         mutableAvailableExchange.value = AvailableExchange(
-                currencyResponse.currencyQuotes.quote1,
-                currencyResponse.currencyQuotes.quote2
+                0,
+                0
         )
         return mutableAvailableExchange
     }
