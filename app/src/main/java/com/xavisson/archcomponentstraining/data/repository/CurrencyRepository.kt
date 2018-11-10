@@ -3,7 +3,7 @@ package com.xavisson.archcomponentstraining.data.repository
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
-import com.xavisson.archcomponentstraining.data.remote.ExchangesResponse
+import com.xavisson.archcomponentstraining.data.remote.CurrencyResponse
 import com.xavisson.archcomponentstraining.data.remote.RemoteCurrencyDataSource
 import com.xavisson.archcomponentstraining.data.room.CurrencyEntity
 import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDataSource
@@ -29,7 +29,7 @@ class CurrencyRepository @Inject constructor(
         roomCurrencyDao.getAllCurrencies()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map { currencyList ->
+                .subscribe { currencyList ->
                     mutableLiveData.value = transform(currencyList)
                 }
 
@@ -49,9 +49,11 @@ class CurrencyRepository @Inject constructor(
         remoteCurrencyDataSource.requestAvailableExchange(currencies)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .map { currencyResponse ->
-                    if (currencyResponse.success) {
+                .subscribe { currencyResponse ->
+                    if (currencyResponse.isSuccess) {
                         mutableLiveData.value = transform(currencyResponse)
+                    } else {
+                        throw Throwable("CurrencyRepository -> on Error occurred")
                     }
                 }
 
@@ -77,7 +79,7 @@ class CurrencyRepository @Inject constructor(
         }
     }
 
-    private fun transform(exchangeMap: ExchangesResponse): AvailableExchange {
-        return AvailableExchange(exchangeMap.quotes)
+    private fun transform(exchangeMap: CurrencyResponse): AvailableExchange {
+        return AvailableExchange(exchangeMap.currencyQuotes)
     }
 }

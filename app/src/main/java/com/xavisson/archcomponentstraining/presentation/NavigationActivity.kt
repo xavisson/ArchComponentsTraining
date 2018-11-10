@@ -35,8 +35,7 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
         val exchangeViewModel = ViewModelProviders.of(this).get(ExchangeViewModel::class.java)
         exchangeViewModel.getAvailableExchange("AUD,EUR")?.observe(this, Observer { availableExchange ->
             availableExchange?.availableExchangesMap?.forEach { key, value ->
-                print("OHTE: $key $value")
-                Toast.makeText(this, key, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, key + " " + value, Toast.LENGTH_SHORT).show()
             }
         })
     }
