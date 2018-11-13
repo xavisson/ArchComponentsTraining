@@ -45,7 +45,7 @@
             android:hint="@string/_0_00"
             android:inputType="numberDecimal"
             android:textColor="@color/colorAccentDark"
-            android:textColorHint="@color/white_trans"
+            android:textColorHint="@color/blue_trans"
             android:textSize="18sp"
             android:textStyle="bold" />
 

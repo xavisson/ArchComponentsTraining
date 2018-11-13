@@ -18,7 +18,7 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.navigation_home -> {
-                replaceFragment(ConversionFragment.newInstance())
+                replaceFragment(CurrencyFragment.newInstance())
                 return true
             }
             R.id.navigation_dashboard -> {
@@ -30,7 +30,7 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
     }
 
     private fun initUI() {
-        replaceFragment(ConversionFragment.newInstance())
+        replaceFragment(CurrencyFragment.newInstance())
         initNavigation()
     }
 
