@@ -22,6 +22,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/kotlin_currency" />
 
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,20 +32,36 @@
         android:textSize="28sp"
         android:textStyle="bold" />
 
+
+    <EditText
+        android:id="@+id/currency_edit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:hint="@string/_0_00"
+        android:inputType="numberDecimal"
+        android:textColor="@color/colorAccentDark"
+        android:textColorHint="@color/white_trans"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+
     <Spinner
         android:id="@+id/from_currency_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="8dp"
         android:dropDownSelector="@color/colorPrimary"
         android:spinnerMode="dropdown" />
 
-    <EditText
-        android:id="@+id/from_currency_edit"
+
+    <TextView
+        android:id="@+id/to_currency_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:inputType="numberDecimal"
+        android:gravity="center"
+        android:text="@string/to"
         android:textColor="@color/colorAccentDark"
         android:textSize="18sp"
         android:textStyle="bold" />
@@ -53,17 +70,18 @@
         android:id="@+id/to_currency_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:spinnerMode="dropdown"
         android:theme="@style/AppTheme" />
 
-    <EditText
-        android:id="@+id/to_currency_edit"
+
+    <Button
+        android:id="@+id/convert_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:inputType="numberDecimal"
-        android:textColor="@color/colorAccentDark"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:layout_marginTop="16dp"
+        android:background="@color/colorAccent"
+        android:text="@string/convert"
+        android:textColor="@android:color/white" />
+
 </LinearLayout>
