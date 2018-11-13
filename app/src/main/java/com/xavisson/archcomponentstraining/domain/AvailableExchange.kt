@@ -1,3 +1,5 @@
 package com.xavisson.archcomponentstraining.domain
 
-data class AvailableExchange(var availableExchangesMap: Map<String, Double>)
+import java.io.Serializable
+
+data class AvailableExchange(var availableExchangesMap: Map<String, Double>) : Serializable
