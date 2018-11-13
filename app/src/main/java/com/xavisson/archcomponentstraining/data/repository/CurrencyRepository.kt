@@ -3,6 +3,7 @@ package com.xavisson.archcomponentstraining.data.repository
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.Transformations
+import android.util.Log
 import com.xavisson.archcomponentstraining.data.remote.CurrencyResponse
 import com.xavisson.archcomponentstraining.data.remote.RemoteCurrencyDataSource
 import com.xavisson.archcomponentstraining.data.room.CurrencyEntity
@@ -10,7 +11,10 @@ import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDataSource
 import com.xavisson.archcomponentstraining.domain.AvailableExchange
 import com.xavisson.archcomponentstraining.domain.Currency
 import io.reactivex.Completable
+import io.reactivex.CompletableObserver
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.annotations.NonNull
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
@@ -63,10 +67,22 @@ class CurrencyRepository @Inject constructor(
     private fun populateRoomDataSource(roomCurrencyDataSource: RoomCurrencyDataSource) {
         val currencyDao = roomCurrencyDataSource.currencyDao()
         val currencyEntityList = RoomCurrencyDataSource.getAllCurrencies()
-        Completable.create { currencyDao.insertAll(currencyEntityList) }
+        Completable.fromAction { currencyDao.insertAll(currencyEntityList) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { }
+                .subscribe(object : CompletableObserver {
+                    override fun onSubscribe(@NonNull d: Disposable) {
+                    }
+
+                    override fun onComplete() {
+                        Log.i(CurrencyRepository::class.java.simpleName, "DataSource has been Populated");
+                    }
+
+                    override fun onError(@NonNull e: Throwable) {
+                        e.printStackTrace()
+                        Log.e(CurrencyRepository::class.java.simpleName, "DataSource hasn't been Populated")
+                    }
+                })
     }
 
     private fun transform(liveCurrencyEntity: LiveData<List<CurrencyEntity>>): LiveData<List<Currency>> {
