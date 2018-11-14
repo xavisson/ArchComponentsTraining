@@ -20,6 +20,7 @@ class CurrencyFragment : Fragment() {
         fun newInstance() = CurrencyFragment()
     }
 
+    private val currencies = ArrayList<String>()
     private var fromCurrencySpinner: Spinner? = null
     private var toCurrencySpinner: Spinner? = null
     private var currencyEdit: EditText? = null
@@ -43,6 +44,12 @@ class CurrencyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initUI()
+        populateSpinnerAdapter()
+    }
+
+    override fun onDestroyView() {
+        currencyViewModel?.unSubscribeViewModel()
+        super.onDestroyView()
     }
 
     private fun initViewModel() {
@@ -60,6 +67,7 @@ class CurrencyFragment : Fragment() {
     }
 
     private fun initSpinners() {
+        currenciesAdapter = ArrayAdapter(activity, R.layout.item_spinner, currencies)
         fromCurrencySpinner?.adapter = currenciesAdapter
         fromCurrencySpinner?.setSelection(0)
         toCurrencySpinner?.adapter = currenciesAdapter
@@ -71,9 +79,6 @@ class CurrencyFragment : Fragment() {
     }
 
     private fun populateSpinnerAdapter() {
-
-        val currencies = ArrayList<String>()
-        currenciesAdapter = ArrayAdapter(activity, R.layout.item_spinner, currencies)
         currencyViewModel?.loadCurrencyList()?.observe(this, Observer { currencyList ->
             currencyList!!.forEach {
                 currencies.add(it.code + "  " + it.country)

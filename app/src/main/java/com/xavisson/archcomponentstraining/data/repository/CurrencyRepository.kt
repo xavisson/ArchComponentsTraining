@@ -10,15 +10,18 @@ import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDataSource
 import com.xavisson.archcomponentstraining.domain.AvailableExchange
 import com.xavisson.archcomponentstraining.domain.Currency
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CurrencyRepository @Inject constructor(
-        val roomCurrencyDataSource: RoomCurrencyDataSource,
-        val remoteCurrencyDataSource: RemoteCurrencyDataSource
+        private val roomCurrencyDataSource: RoomCurrencyDataSource,
+        private val remoteCurrencyDataSource: RemoteCurrencyDataSource
 ) : Repository {
+
+    val allCompositeDisposable: MutableList<Disposable> = arrayListOf()
 
     override fun getTotalCurrencies() = roomCurrencyDataSource.currencyDao().getCurrenciesTotal()
 
@@ -30,12 +33,13 @@ class CurrencyRepository @Inject constructor(
     override fun getCurrencyList(): LiveData<List<Currency>> {
         val roomCurrencyDao = roomCurrencyDataSource.currencyDao()
         val mutableLiveData = MutableLiveData<List<Currency>>()
-        roomCurrencyDao.getAllCurrencies()
+        val disposable = roomCurrencyDao.getAllCurrencies()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { currencyList ->
+                .subscribe({ currencyList ->
                     mutableLiveData.value = transform(currencyList)
-                }
+                }, { t: Throwable? -> t!!.printStackTrace() })
+        allCompositeDisposable.add(disposable)
 
         return mutableLiveData
     }
@@ -50,16 +54,17 @@ class CurrencyRepository @Inject constructor(
 
     override fun getAvailableExchange(currencies: String): LiveData<AvailableExchange> {
         val mutableLiveData = MutableLiveData<AvailableExchange>()
-        remoteCurrencyDataSource.requestAvailableExchange(currencies)
+        val disposable = remoteCurrencyDataSource.requestAvailableExchange(currencies)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { currencyResponse ->
+                .subscribe({ currencyResponse ->
                     if (currencyResponse.isSuccess) {
                         mutableLiveData.value = transform(currencyResponse)
                     } else {
                         throw Throwable("CurrencyRepository -> on Error occurred")
                     }
-                }
+                }, { t: Throwable? -> t!!.printStackTrace() })
+        allCompositeDisposable.add(disposable)
         return mutableLiveData
     }
 
