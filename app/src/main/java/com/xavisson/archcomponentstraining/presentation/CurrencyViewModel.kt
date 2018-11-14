@@ -1,8 +1,6 @@
 package com.xavisson.archcomponentstraining.presentation
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
+import android.arch.lifecycle.*
 import android.util.Log
 import com.xavisson.archcomponentstraining.data.repository.CurrencyRepository
 import com.xavisson.archcomponentstraining.di.MyApplication
@@ -15,14 +13,17 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
+import android.arch.lifecycle.Lifecycle.Event.ON_DESTROY
+import com.xavisson.archcomponentstraining.domain.AvailableExchange
 
-class CurrencyViewModel : ViewModel() {
+class CurrencyViewModel : ViewModel(), LifecycleObserver {
 
     @Inject
     lateinit var currencyRepository: CurrencyRepository
 
     private val compositeDisposable = CompositeDisposable()
     private var liveCurrencyData: LiveData<List<Currency>>? = null
+    private var liveAvailableExchange: LiveData<AvailableExchange>? = null
 
     init {
         initializeDagger()
@@ -38,8 +39,11 @@ class CurrencyViewModel : ViewModel() {
         return liveCurrencyData
     }
 
-    fun getCurrencyList(): LiveData<List<Currency>>? {
-        return liveCurrencyData
+    fun getAvailableExchange(currencies: String): LiveData<AvailableExchange>? {
+        liveAvailableExchange = null
+        liveAvailableExchange = MutableLiveData<AvailableExchange>()
+        liveAvailableExchange = currencyRepository.getAvailableExchange(currencies)
+        return liveAvailableExchange
     }
 
     fun initLocalCurrencies() {
@@ -56,6 +60,7 @@ class CurrencyViewModel : ViewModel() {
         compositeDisposable.add(disposable)
     }
 
+    @OnLifecycleEvent(ON_DESTROY)
     fun unSubscribeViewModel() {
         for (disposable in currencyRepository.allCompositeDisposable) {
             compositeDisposable.addAll(disposable)
@@ -63,6 +68,10 @@ class CurrencyViewModel : ViewModel() {
         compositeDisposable.clear()
     }
 
+    override fun onCleared() {
+        unSubscribeViewModel()
+        super.onCleared()
+    }
 
     private fun isRoomEmpty(currenciesTotal: Int) = currenciesTotal == 0
 
