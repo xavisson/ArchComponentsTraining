@@ -2,11 +2,11 @@ package com.xavisson.archcomponentstraining.data.repository
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.Transformations
 import android.util.Log
 import com.xavisson.archcomponentstraining.data.remote.CurrencyResponse
 import com.xavisson.archcomponentstraining.data.remote.RemoteCurrencyDataSource
 import com.xavisson.archcomponentstraining.data.room.CurrencyEntity
+import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDao
 import com.xavisson.archcomponentstraining.data.room.RoomCurrencyDataSource
 import com.xavisson.archcomponentstraining.domain.AvailableExchange
 import com.xavisson.archcomponentstraining.domain.Currency
@@ -17,7 +17,9 @@ import io.reactivex.annotations.NonNull
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class CurrencyRepository @Inject constructor(
         val roomCurrencyDataSource: RoomCurrencyDataSource,
         val remoteCurrencyDataSource: RemoteCurrencyDataSource
@@ -48,6 +50,44 @@ class CurrencyRepository @Inject constructor(
         return currencyList
     }
 
+    private fun populateRoomDataSource(roomCurrencyDataSource: RoomCurrencyDataSource) {
+        val currencyDao = roomCurrencyDataSource.currencyDao()
+        currencyDao.getCurrenciesTotal()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (isRoomEmpty(it)) {
+                        populate(currencyDao)
+                    } else {
+                        Log.i(CurrencyRepository::class.java.simpleName, "DataSource has been already Populated")
+                    }
+                }
+    }
+
+    private fun isRoomEmpty(currenciesTotal: Int) = currenciesTotal == 0
+
+    private fun populate(currencyDao: RoomCurrencyDao) {
+        val currencyEntityList = RoomCurrencyDataSource.getAllCurrencies()
+        Completable.fromAction { currencyDao.insertAll(currencyEntityList) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(object : CompletableObserver {
+                    override fun onSubscribe(@NonNull d: Disposable) {
+
+                    }
+
+                    override fun onComplete() {
+                        Log.i(CurrencyRepository::class.java.simpleName, "DataSource has been Populated")
+
+                    }
+
+                    override fun onError(@NonNull e: Throwable) {
+                        e.printStackTrace()
+                        Log.e(CurrencyRepository::class.java.simpleName, "DataSource hasn't been Populated")
+                    }
+                })
+    }
+
     override fun getAvailableExchange(currencies: String): LiveData<AvailableExchange> {
         val mutableLiveData = MutableLiveData<AvailableExchange>()
         remoteCurrencyDataSource.requestAvailableExchange(currencies)
@@ -60,39 +100,7 @@ class CurrencyRepository @Inject constructor(
                         throw Throwable("CurrencyRepository -> on Error occurred")
                     }
                 }
-
         return mutableLiveData
-    }
-
-    private fun populateRoomDataSource(roomCurrencyDataSource: RoomCurrencyDataSource) {
-        val currencyDao = roomCurrencyDataSource.currencyDao()
-        val currencyEntityList = RoomCurrencyDataSource.getAllCurrencies()
-        Completable.fromAction { currencyDao.insertAll(currencyEntityList) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : CompletableObserver {
-                    override fun onSubscribe(@NonNull d: Disposable) {
-                    }
-
-                    override fun onComplete() {
-                        Log.i(CurrencyRepository::class.java.simpleName, "DataSource has been Populated");
-                    }
-
-                    override fun onError(@NonNull e: Throwable) {
-                        e.printStackTrace()
-                        Log.e(CurrencyRepository::class.java.simpleName, "DataSource hasn't been Populated")
-                    }
-                })
-    }
-
-    private fun transform(liveCurrencyEntity: LiveData<List<CurrencyEntity>>): LiveData<List<Currency>> {
-        return Transformations.map(liveCurrencyEntity) { currencyEntities ->
-            val currencyList = ArrayList<Currency>()
-            currencyEntities.forEach {
-                currencyList.add(Currency(it.countryCode, it.countryName))
-            }
-            currencyList
-        }
     }
 
     private fun transform(exchangeMap: CurrencyResponse): AvailableExchange {

@@ -7,9 +7,13 @@ import io.reactivex.Flowable
 
 @Dao
 interface RoomCurrencyDao {
-	@Insert
-	fun insertAll(currencies: List<CurrencyEntity>)
 
-	@Query(RoomContract.SELECT_CURRENCIES)
-	fun getAllCurrencies(): Flowable<List<CurrencyEntity>>
+    @Query(RoomContract.SELECT_CURRENCIES_COUNT)
+    fun getCurrenciesTotal(): Flowable<Int>
+
+    @Insert
+    fun insertAll(currencies: List<CurrencyEntity>)
+
+    @Query(RoomContract.SELECT_CURRENCIES)
+    fun getAllCurrencies(): Flowable<List<CurrencyEntity>>
 }
