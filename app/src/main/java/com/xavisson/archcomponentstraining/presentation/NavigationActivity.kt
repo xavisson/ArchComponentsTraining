@@ -12,7 +12,10 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        initUI()
+        if (savedInstanceState == null) {
+            replaceFragment(CurrencyFragment.newInstance())
+        }
+        initNavigation()
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -27,11 +30,6 @@ class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigatio
             }
         }
         return false
-    }
-
-    private fun initUI() {
-        replaceFragment(CurrencyFragment.newInstance())
-        initNavigation()
     }
 
     private fun initNavigation() {
