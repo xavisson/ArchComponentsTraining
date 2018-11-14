@@ -27,18 +27,20 @@ class CurrencyFragment : Fragment() {
     private var currenciesAdapter: ArrayAdapter<String>? = null
     private var currencyFrom: String? = null
     private var currencyTo: String? = null
+
     private var currencyViewModel: CurrencyViewModel? = null
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        initViewModel()
         populateSpinnerAdapter()
     }
 
-    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater?.inflate(R.layout.currency_fragment, container, false)
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initUI()
     }
@@ -56,18 +58,6 @@ class CurrencyFragment : Fragment() {
         initConvertButton()
     }
 
-    private fun populateSpinnerAdapter() {
-        val currencies = ArrayList<String>()
-        currenciesAdapter = ArrayAdapter(activity, R.layout.item_spinner, currencies)
-        currencyViewModel?.getCurrencyList()?.observe(this, Observer { currencyList ->
-            currencyList!!.forEach {
-                currencies.add(it.code + "  " + it.country)
-            }
-            currenciesAdapter!!.setDropDownViewResource(R.layout.item_spinner);
-            currenciesAdapter!!.notifyDataSetChanged()
-        })
-    }
-
     private fun initSpinners() {
         fromCurrencySpinner?.adapter = currenciesAdapter
         fromCurrencySpinner?.setSelection(0)
@@ -79,7 +69,20 @@ class CurrencyFragment : Fragment() {
         convertButton?.setOnClickListener { convert() }
     }
 
-    // You can move all this logic to the view model
+    private fun populateSpinnerAdapter() {
+
+        val currencies = ArrayList<String>()
+        currenciesAdapter = ArrayAdapter(activity, R.layout.item_spinner, currencies)
+        currencyViewModel?.loadCurrencyList()?.observe(this, Observer { currencyList ->
+            currencyList!!.forEach {
+                currencies.add(it.code + "  " + it.country)
+            }
+            currenciesAdapter!!.setDropDownViewResource(R.layout.item_spinner);
+            currenciesAdapter!!.notifyDataSetChanged()
+        })
+    }
+
+
     private fun convert() {
         val quantity = currencyEdit?.text.toString()
         currencyFrom = getCurrencyCode(fromCurrencySpinner?.selectedItem.toString())
@@ -125,7 +128,8 @@ class CurrencyFragment : Fragment() {
     }
 
     private fun getCurrencyCode(currency: String) = currency.substring(0, 3)
-    private fun getCurrencyCodeResult(currency: String) = currency.substring(3)
-    private fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 
+    private fun getCurrencyCodeResult(currency: String) = currency.substring(3)
+
+    private fun Double.format(digits: Int) = java.lang.String.format("%.${digits}f", this)
 }
